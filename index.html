@@ -123,9 +123,9 @@
   <div class="panel">
     <table>
       <thead><tr>
-        <th>Person</th><th>Lead measure</th><th>Target</th><th>This week</th><th>Status</th><th>Streak</th><th>Owner</th>
+        <th>Person</th><th>Lead measure</th><th>Target</th><th>Today</th><th>This week</th><th>Status</th><th>Streak</th><th>Owner</th>
       </tr></thead>
-      <tbody id="rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+      <tbody id="rows"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
   <div class="err" id="err"></div>
@@ -270,7 +270,7 @@
     body.textContent = '';
     if (!order.length) {
       var tr = el('tr'), td = el('td', 'empty', 'No people set up yet.');
-      td.colSpan = 7; tr.appendChild(td); body.appendChild(tr);
+      td.colSpan = 8; tr.appendChild(td); body.appendChild(tr);
     }
     order.forEach(function (name) {
       groups[name].forEach(function (r, i) {
@@ -301,6 +301,7 @@
           w.textContent = r.week;
         }
         tr.appendChild(w);
+        tr.appendChild(el('td', 'm week', (!isCount && typeof r.weekTotal === 'number') ? String(r.weekTotal) : '—'));
 
         var s = el('td', 'm');
         if (r.status && r.status !== 'NONE') s.appendChild(chip(r.status));
