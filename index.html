@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0f1412; --panel:#161d1a; --hover:#1b2420; --text:#e8eeeb; --muted:#8a9a93; --faint:#5f6f68; --line:#232d29;
+          --green:#34d399; --amber:#fbbf24; --red:#f87171; --grey:#6b7b74; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font: 15px/1.45 Inter, "Segoe UI", system-ui, sans-serif;
+         font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 28px 28px; }
+
+  header { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap; margin-bottom: 20px; }
+  .brand { align-self:center; margin-right:20px; padding-right:20px; border-right:1px solid var(--line);
+           font-size:14px; font-weight:600; white-space:nowrap; }
+  h1 { margin:0; font-size:24px; font-weight:600; letter-spacing:-.01em; }
+  .meta { color:var(--muted); font-size:14px; display:flex; align-items:center; gap:10px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 3px color-mix(in srgb, var(--green) 20%, transparent); }
+  .dot.stale { background:var(--red); box-shadow:0 0 0 3px color-mix(in srgb, var(--red) 20%, transparent); }
+
+  .summary { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .count { display:flex; align-items:center; gap:10px; padding:6px 12px; border:1px solid var(--line); border-radius:10px;
+           background:var(--panel); color:var(--muted); font-size:14px; }
+  .count b { color:var(--text); font-weight:600; }
+
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:980px; }
+  th { text-align:left; padding:10px 16px; font-size:12px; font-weight:600; color:var(--faint); letter-spacing:.08em;
+       text-transform:uppercase; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:10px 16px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr:hover td.m { background:var(--hover); }
+  tbody tr.first td { border-top:1px solid var(--line); }
+  tbody tr:last-child td { border-bottom:0; }
+  td.person { vertical-align:top; padding-top:12px; border-right:1px solid var(--line); }
+  .who { display:flex; align-items:center; gap:10px; font-weight:600; white-space:nowrap; }
+  .avatar { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-size:12px; font-weight:600; color:#0f1412; flex:none; }
+  .muted { color:var(--muted); }
+
+  .week { min-width:150px; }
+  .week .n { font-weight:600; }
+  .week .of { color:var(--muted); }
+  .bar { margin-top:6px; height:4px; background:var(--line); border-radius:999px; overflow:hidden; }
+  .bar span { display:block; height:100%; border-radius:999px; }
+
+  .chip { display:inline-flex; align-items:center; gap:7px; padding:2px 10px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap; }
+  .chip i { width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .GREEN { --c:var(--green); } .AMBER { --c:var(--amber); } .RED { --c:var(--red); } .OFF { --c:var(--grey); }
+  .chip { color:var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .bar span { background:var(--c); }
+
+  .section { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap; margin:28px 0 12px; }
+  h2 { margin:4px 0 0; font-size:18px; font-weight:600; letter-spacing:-.01em; }
+  table.company { min-width:760px; }
+  .pct { font-size:22px; font-weight:600; letter-spacing:-.01em; white-space:nowrap; }
+  tbody tr.has-note td { border-bottom:0; padding-bottom:4px; }
+  td.note { padding-top:0; color:var(--faint); font-size:13px; }
+
+  .err { color:var(--red); margin-top:14px; font-size:15px; }
+  .empty { padding:28px; text-align:center; color:var(--muted); }
+
+  .tabs { display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line); }
+  .tab { background:none; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; padding:8px 14px;
+         color:var(--muted); font:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+  .tab:hover { color:var(--text); }
+  .tab.on { color:var(--text); border-bottom-color:var(--green); }
+  .screen[hidden] { display:none; }
+  .section.first { margin-top:0; }
+  .placeholder { padding:22px 20px; color:var(--grey); }
+  .count.alert b { color:var(--red); }
+  .pager { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:12px; color:var(--muted); font-size:14px; }
+  .pager[hidden] { display:none; }
+  .pager button { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:6px 12px;
+                  color:var(--text); font:inherit; font-weight:500; cursor:pointer; }
+  .pager button:hover { background:var(--hover); }
+  .tag { display:inline-block; margin-right:8px; padding:1px 8px; border-radius:999px; font-size:12px; font-weight:600;
+         vertical-align:middle; color:var(--amber); background: color-mix(in srgb, var(--amber) 14%, transparent); }
+  .daypick { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:6px 10px;
+             color:var(--text); font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
+  .daypick:hover { background:var(--hover); }
+  .daypick { display:inline-flex; align-items:center; gap:8px; }
+  .daypick svg { color:var(--muted); }
+  .daypick-wrap { position:relative; }
+  .daypick-wrap[hidden], .daymenu[hidden] { display:none; }
+  .daymenu { position:absolute; right:0; top:calc(100% + 6px); z-index:10; min-width:100%; max-height:280px; overflow-y:auto;
+             background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:4px;
+             box-shadow:0 10px 30px rgba(0,0,0,.45); }
+  .dayopt { display:block; width:100%; text-align:left; background:none; border:0; border-radius:6px; padding:7px 12px;
+            color:var(--text); font:inherit; font-size:14px; white-space:nowrap; cursor:pointer; }
+  .dayopt:hover { background:var(--hover); }
+  .dayopt.on { color:var(--green); font-weight:600; }
+  /* Inbox tables: every row the same height, long text cut with "…" so rows never wrap */
+  table.paged { table-layout:fixed; }
+  table.paged td { height:43px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  table.paged td.empty { height:43px; padding:0 16px; }
+  table.paged tr.filler td { border-bottom:0; }
+  table.paged tr.filler:hover td { background:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <span class="brand">Daily Execution Scoreboard</span>
+    <button class="tab" data-tab="people">People</button>
+    <button class="tab" data-tab="company">Company</button>
+    <button class="tab" data-tab="inbox">Inbox</button>
+    <button class="tab" data-tab="history">History</button>
+  </nav>
+
+  <section class="screen" id="screen-people">
+  <header>
+    <div>
+      <h1>People</h1>
+    </div>
+    <div class="meta"><span class="dot" id="dot"></span><span id="updated">Loading…</span></div>
+  </header>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th>Person</th><th>Lead measure</th><th>Target</th><th>This week</th><th>Status</th><th>Streak</th><th>Owner</th>
+      </tr></thead>
+      <tbody id="rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="err" id="err"></div>
+  </section>
+
+  <section class="screen" id="screen-company" hidden>
+  <header>
+    <div>
+      <h1>Company</h1>
+    </div>
+    <div class="meta"><span class="dot" id="dot2"></span><span id="updated2">Loading…</span></div>
+  </header>
+
+  <div class="panel">
+    <table class="company">
+      <thead><tr>
+        <th>Measure</th><th>This week</th><th>%</th><th>Target</th><th>Status</th>
+      </tr></thead>
+      <tbody id="rows2"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="err" id="err2"></div>
+  </section>
+
+  <section class="screen" id="screen-inbox" hidden>
+  <header>
+    <div>
+      <h1>Inbox</h1>
+    </div>
+    <div class="meta"><span class="dot" id="dot3"></span><span id="updated3">Loading…</span></div>
+  </header>
+
+  <div class="section first">
+    <h2>Emails waiting for a reply</h2>
+  </div>
+  <div class="summary" id="summaryE"></div>
+  <div class="panel">
+    <table class="company paged">
+      <thead><tr>
+        <th style="width:130px">Waiting</th><th style="width:130px">Inbox</th><th style="width:28%">From</th><th>Subject</th>
+      </tr></thead>
+      <tbody id="rowsE"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="pager" id="pagerE" hidden>
+    <button id="prevE">Previous</button>
+    <span id="pageE"></span>
+    <button id="nextE">Next</button>
+  </div>
+
+  <div class="section">
+    <h2>Coho messages waiting for a reply</h2>
+  </div>
+  <div class="summary" id="summary3"></div>
+  <div class="panel">
+    <table class="company paged">
+      <thead><tr>
+        <th style="width:130px">Waiting</th><th style="width:130px">Type</th><th>Subject</th><th style="width:22%">From</th><th style="width:22%">Property</th>
+      </tr></thead>
+      <tbody id="rows3"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="pager" id="pager3" hidden>
+    <button id="prev3">Previous</button>
+    <span id="page3"></span>
+    <button id="next3">Next</button>
+  </div>
+  <div class="err" id="err3"></div>
+  </section>
+
+  <section class="screen" id="screen-history" hidden>
+  <header>
+    <div>
+      <h1>History</h1>
+    </div>
+    <div class="meta">
+      <div class="daypick-wrap" id="dayPick" hidden>
+        <button type="button" class="daypick" id="dayBtn" aria-haspopup="listbox" aria-expanded="false">
+          <span id="dayLabel"></span>
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="daymenu" id="dayMenu" role="listbox" hidden></div>
+      </div>
+    </div>
+  </header>
+
+  <div id="historyBody"><div class="panel"><div class="empty">Loading…</div></div></div>
+  <div class="err" id="err4"></div>
+  </section>
+</div>
+<script>
+  const API = 'https://script.google.com/macros/s/AKfycbzdl3kacRh7zl1f7PU6Nddr8_q8nV7D1Dp7O1ng6rBN45AFLKrngIp_OZT2dFN_KvEj/exec';
+  // On failure the old numbers stay on screen; the next refresh retries.
+  function fetchJson(name, onOk, onFail) {
+    fetch(API + '?api=' + name)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.error) throw new Error(d.error);
+        onOk(d);
+      })
+      .catch(onFail);
+  }
+  var LABEL = { GREEN: 'Green', AMBER: 'Amber', RED: 'Red', OFF: 'Off' };
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function hue(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+    return h;
+  }
+  function chip(status) {
+    var c = el('span', 'chip ' + status);
+    c.append(el('i'), LABEL[status] || status);
+    return c;
+  }
+  function render(data) {
+    document.getElementById('err').textContent = '';
+    document.getElementById('dot').className = 'dot';
+    document.getElementById('updated').textContent = 'Updated ' + data.updated;
+
+    var tally = { GREEN: 0, AMBER: 0, RED: 0 };
+    data.rows.forEach(function (r) { if (r.status in tally) tally[r.status]++; });
+    var summary = document.getElementById('summary');
+    summary.textContent = '';
+    ['GREEN', 'AMBER', 'RED'].forEach(function (s) {
+      var c = el('div', 'count');
+      c.append(chip(s), el('b', null, tally[s]), ' measures');
+      summary.appendChild(c);
+    });
+
+    var groups = {}, order = [];
+    data.rows.forEach(function (r) {
+      if (!groups[r.person]) { groups[r.person] = []; order.push(r.person); }
+      groups[r.person].push(r);
+    });
+
+    var body = document.getElementById('rows');
+    body.textContent = '';
+    if (!order.length) {
+      var tr = el('tr'), td = el('td', 'empty', 'No people set up yet.');
+      td.colSpan = 7; tr.appendChild(td); body.appendChild(tr);
+    }
+    order.forEach(function (name) {
+      groups[name].forEach(function (r, i) {
+        var tr = el('tr', i === 0 ? 'first' : '');
+        if (i === 0) {
+          var p = el('td', 'person');
+          p.rowSpan = groups[name].length;
+          var who = el('div', 'who');
+          var av = el('span', 'avatar', name.trim().charAt(0).toUpperCase());
+          av.style.background = 'hsl(' + hue(name) + ' 55% 70%)';
+          who.append(av, name);
+          p.appendChild(who);
+          tr.appendChild(p);
+        }
+        tr.appendChild(el('td', 'm', r.measure));
+        tr.appendChild(el('td', 'm muted', r.target));
+
+        var w = el('td', 'm week ' + r.status);
+        var isCount = r.kind === 'count';
+        if (!isCount && typeof r.calls === 'number' && r.goal > 0) {
+          var line = el('div');
+          line.append(el('span', 'n', r.calls), el('span', 'of', ' / ' + r.goal));
+          var bar = el('div', 'bar'), fill = el('span');
+          fill.style.width = Math.min(100, (r.calls / r.goal) * 100) + '%';
+          bar.appendChild(fill);
+          w.append(line, bar);
+        } else {
+          w.textContent = r.week;
+        }
+        tr.appendChild(w);
+
+        var s = el('td', 'm');
+        if (r.status && r.status !== 'NONE') s.appendChild(chip(r.status));
+        tr.appendChild(s);
+        tr.appendChild(el('td', 'm muted', isCount ? '—' : r.streak + ' day' + (r.streak === 1 ? '' : 's')));
+        tr.appendChild(el('td', 'm muted', r.owner));
+        body.appendChild(tr);
+      });
+    });
+  }
+  function render2(data) {
+    document.getElementById('err2').textContent = '';
+    document.getElementById('dot2').className = 'dot';
+    document.getElementById('updated2').textContent = 'Updated ' + data.updated;
+
+    var body = document.getElementById('rows2');
+    body.textContent = '';
+    var measures = data.measures || [];
+    if (!measures.length) {
+      var tr0 = el('tr'), td0 = el('td', 'empty', 'No company measures set up yet.');
+      td0.colSpan = 5; tr0.appendChild(td0); body.appendChild(tr0);
+    }
+    measures.forEach(function (m) {
+      var tr = el('tr', m.note ? 'has-note' : '');
+      tr.appendChild(el('td', 'm', m.measure));
+      tr.appendChild(el('td', 'm', m.week));
+      tr.appendChild(el('td', 'm pct', m.pct == null ? '—' : m.pct + '%'));
+      tr.appendChild(el('td', 'm muted', m.target || ''));
+      var s = el('td', 'm');
+      if (m.status && m.status !== 'NONE') s.appendChild(chip(m.status));
+      tr.appendChild(s);
+      body.appendChild(tr);
+      if (m.note) {
+        var nr = el('tr'), nd = el('td', 'note', m.note);
+        nd.colSpan = 5; nr.appendChild(nd); body.appendChild(nr);
+      }
+    });
+  }
+  function render3(data) {
+    document.getElementById('err3').textContent = '';
+    document.getElementById('dot3').className = 'dot';
+    document.getElementById('updated3').textContent = 'Updated ' + data.updated;
+
+    var summary = document.getElementById('summary3');
+    summary.textContent = '';
+    [['Total waiting', data.total], ['Messages', data.messages], ['Maintenance', data.maintenance],
+     ['Waiting over 24 hrs', data.over24]].forEach(function (x, i) {
+      var c = el('div', 'count' + (i === 3 && x[1] > 0 ? ' alert' : ''));
+      c.append(x[0], ' ', el('b', null, x[1] == null ? 0 : x[1]));
+      summary.appendChild(c);
+    });
+
+    cohoPager.set(data.items || []);
+
+    var emails = data.emails || [];
+    var summaryE = document.getElementById('summaryE');
+    summaryE.textContent = '';
+    [['Total waiting', emails.length],
+     ['Lettings', emails.filter(function (m) { return m.inbox === 'Lettings'; }).length],
+     ['Management', emails.filter(function (m) { return m.inbox === 'Management'; }).length],
+     ['Waiting over 24 hrs', emails.filter(function (m) { return Number(m.hours) >= 24; }).length]].forEach(function (x, i) {
+      var c = el('div', 'count' + (i === 3 && x[1] > 0 ? ' alert' : ''));
+      c.append(x[0], ' ', el('b', null, x[1]));
+      summaryE.appendChild(c);
+    });
+    emailPager.set(emails);
+  }
+
+  function waitingCell(m) {
+    var w = el('td', 'm');
+    if (Number(m.hours) >= 24) {
+      var c = el('span', 'chip RED'); c.append(el('i'), m.waiting); w.appendChild(c);
+    } else {
+      w.textContent = m.waiting;
+    }
+    return w;
+  }
+
+  // Table paging: 10 rows a page, auto-advance every 15s,
+  // Previous/Next pauses auto-advance for 60s. Each table pages on its own.
+  var PAGE_SIZE = 10;
+  function makePager(id, cols, emptyText, renderRow) {
+    var items = [], page = 0, pausedUntil = 0;
+    function pageCount() { return Math.max(1, Math.ceil(items.length / PAGE_SIZE)); }
+    function draw() {
+      var body = document.getElementById('rows' + id);
+      body.textContent = '';
+      var slice = items.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+      // Keep the pager's space even with one page, so the layout never jumps.
+      var pager = document.getElementById('pager' + id);
+      pager.hidden = false;
+      pager.style.visibility = pageCount() < 2 ? 'hidden' : 'visible';
+      document.getElementById('page' + id).textContent = 'Page ' + (page + 1) + ' of ' + pageCount();
+      if (!slice.length) {
+        var tr0 = el('tr'), td0 = el('td', 'empty', emptyText);
+        td0.colSpan = cols; tr0.appendChild(td0); body.appendChild(tr0);
+      }
+      slice.forEach(function (m) { body.appendChild(renderRow(m)); });
+      // Pad with blank rows so the table is always PAGE_SIZE rows tall.
+      for (var k = Math.max(1, slice.length); k < PAGE_SIZE; k++) {
+        var f = el('tr', 'filler'), fd = el('td', null, ' ');
+        fd.colSpan = cols; f.appendChild(fd); body.appendChild(f);
+      }
+    }
+    function go(delta) { page = (page + delta + pageCount()) % pageCount(); draw(); }
+    document.getElementById('prev' + id).addEventListener('click', function () { pausedUntil = Date.now() + 60000; go(-1); });
+    document.getElementById('next' + id).addEventListener('click', function () { pausedUntil = Date.now() + 60000; go(1); });
+    setInterval(function () { if (Date.now() >= pausedUntil && pageCount() > 1) go(1); }, 15 * 1000);
+    return { set: function (list) { items = list; if (page >= pageCount()) page = 0; draw(); } };
+  }
+
+  var cohoPager = makePager('3', 5, 'Nothing waiting for a reply.', function (m) {
+    var tr = el('tr');
+    tr.appendChild(waitingCell(m));
+    tr.appendChild(el('td', 'm muted', m.type));
+    tr.appendChild(el('td', 'm', m.subject));
+    tr.appendChild(el('td', 'm', m.from));
+    tr.appendChild(el('td', 'm muted', m.property));
+    return tr;
+  });
+
+  var emailPager = makePager('E', 4, 'No emails waiting', function (m) {
+    var tr = el('tr');
+    tr.appendChild(waitingCell(m));
+    tr.appendChild(el('td', 'm muted', m.inbox));
+    tr.appendChild(el('td', 'm', m.from));
+    var s = el('td', 'm', m.subject);
+    if (m.unread) s.prepend(el('span', 'tag', 'Unread'));
+    tr.appendChild(s);
+    return tr;
+  });
+
+  // Tabs. The web app runs in an iframe, so the hash lives on the top page:
+  // read it with google.script.url and set it with google.script.history.
+  var TABS = ['people', 'company', 'inbox'];      // the #rotate cycle
+  var ALL_TABS = TABS.concat(['history']);        // history only opens when clicked
+  var rotateTimer = null;
+  function show(tab) {
+    ALL_TABS.forEach(function (t) {
+      document.getElementById('screen-' + t).hidden = t !== tab;
+    });
+    document.querySelectorAll('.tab').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === tab);
+    });
+    if (tab === 'history') loadHistory();
+  }
+
+  // History tab: saved daily reports, one day at a time.
+  var histData = null;
+  var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function dayLabel(iso) {
+    var p = String(iso).split('-');
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    if (isNaN(d)) return iso;
+    return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()];
+  }
+  function loadHistory() {
+    fetchJson('history', renderHistory, function (e) {
+      document.getElementById('err4').textContent = 'Could not load history: ' + e.message;
+    });
+  }
+  function renderHistory(data) {
+    document.getElementById('err4').textContent = '';
+    histData = data || { days: [], rows: [] };
+    var wrap = document.getElementById('dayPick');
+    var days = histData.days || [];
+    if (!days.length) {
+      wrap.hidden = true;
+      var b = document.getElementById('historyBody');
+      b.textContent = '';
+      var p = el('div', 'panel'); p.appendChild(el('div', 'empty', 'No daily reports saved yet.'));
+      b.appendChild(p);
+      return;
+    }
+    var menu = document.getElementById('dayMenu');
+    menu.textContent = '';
+    days.forEach(function (d) {
+      var o = el('button', 'dayopt', dayLabel(d));
+      o.type = 'button';
+      o.setAttribute('role', 'option');
+      o.setAttribute('data-day', d);
+      o.addEventListener('click', function () { pickDay(d); closeDayMenu(); });
+      menu.appendChild(o);
+    });
+    wrap.hidden = false;
+    pickDay(days.indexOf(currentDay) >= 0 ? currentDay : days[0]);
+  }
+  // Custom date dropdown (the browser's own <select> list can't be themed).
+  var currentDay = '';
+  function pickDay(d) {
+    currentDay = d;
+    document.getElementById('dayLabel').textContent = dayLabel(d);
+    document.querySelectorAll('#dayMenu .dayopt').forEach(function (o) {
+      o.classList.toggle('on', o.getAttribute('data-day') === d);
+    });
+    drawHistoryDay(d);
+  }
+  function closeDayMenu() {
+    document.getElementById('dayMenu').hidden = true;
+    document.getElementById('dayBtn').setAttribute('aria-expanded', 'false');
+  }
+  document.getElementById('dayBtn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var menu = document.getElementById('dayMenu');
+    menu.hidden = !menu.hidden;
+    this.setAttribute('aria-expanded', String(!menu.hidden));
+    if (!menu.hidden) {
+      var on = menu.querySelector('.dayopt.on');
+      if (on) on.scrollIntoView({ block: 'nearest' });
+    }
+  });
+  document.addEventListener('click', function (e) {
+    if (!document.getElementById('dayPick').contains(e.target)) closeDayMenu();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDayMenu(); });
+  function drawHistoryDay(day) {
+    var b = document.getElementById('historyBody');
+    b.textContent = '';
+    var rows = (histData.rows || []).filter(function (r) { return r[0] === day; });
+    ['People', 'Company', 'Inbox'].forEach(function (screen, i) {
+      var sec = el('div', 'section' + (i === 0 ? ' first' : ''));
+      sec.appendChild(el('h2', null, screen));
+      b.appendChild(sec);
+      var panel = el('div', 'panel'), table = el('table', 'company hist');
+      // Company and Inbox rows all belong to "Company", so only People shows the Person column.
+      var showPerson = screen === 'People';
+      var cols = showPerson ? ['Person', 'Measure', 'Target', 'Number', 'Status'] : ['Measure', 'Target', 'Number', 'Status'];
+      var hr = el('tr');
+      cols.forEach(function (h) { hr.appendChild(el('th', null, h)); });
+      var thead = el('thead'); thead.appendChild(hr);
+      var body = el('tbody');
+      var mine = rows.filter(function (r) { return r[1] === screen; });
+      if (!mine.length) {
+        var tr0 = el('tr'), td0 = el('td', 'empty', 'Nothing saved for this day.');
+        td0.colSpan = cols.length; tr0.appendChild(td0); body.appendChild(tr0);
+      }
+      // Group rows by person (first-seen order) so each name appears once.
+      var groups = {}, order = [];
+      mine.forEach(function (r) {
+        var k = showPerson ? r[2] : '';
+        if (!groups[k]) { groups[k] = []; order.push(k); }
+        groups[k].push(r);
+      });
+      order.forEach(function (name) {
+        groups[name].forEach(function (r, j) {
+          var tr = el('tr', showPerson && j === 0 ? 'first' : '');
+          if (showPerson && j === 0) {
+            var p = el('td', 'person');
+            p.rowSpan = groups[name].length;
+            var who = el('div', 'who');
+            var av = el('span', 'avatar', name.trim().charAt(0).toUpperCase());
+            av.style.background = 'hsl(' + hue(name) + ' 55% 70%)';
+            who.append(av, name);
+            p.appendChild(who);
+            tr.appendChild(p);
+          }
+          tr.appendChild(el('td', 'm', r[3]));
+          tr.appendChild(el('td', 'm muted', r[4]));
+          tr.appendChild(el('td', 'm', r[5]));
+          var s = el('td', 'm');
+          if (r[6] && r[6] !== 'NONE') s.appendChild(chip(r[6]));
+          tr.appendChild(s);
+          body.appendChild(tr);
+        });
+      });
+      table.append(thead, body);
+      panel.appendChild(table);
+      b.appendChild(panel);
+    });
+  }
+  function applyHash(hash) {
+    hash = String(hash || '').replace(/^#/, '');
+    clearInterval(rotateTimer); rotateTimer = null;
+    if (hash === 'rotate') {
+      var i = 0;
+      show(TABS[0]);
+      rotateTimer = setInterval(function () { i = (i + 1) % TABS.length; show(TABS[i]); }, 60 * 1000);
+    } else {
+      show(ALL_TABS.indexOf(hash) >= 0 ? hash : 'people');
+    }
+  }
+  function setHash(tab) {
+    try { google.script.history.push(null, null, tab); } catch (e) { location.hash = tab; }
+    applyHash(tab);
+  }
+  document.querySelectorAll('.tab').forEach(function (b) {
+    b.addEventListener('click', function () { setHash(b.getAttribute('data-tab')); });
+  });
+  try {
+    google.script.url.getLocation(function (loc) { applyHash(loc.hash); });
+    google.script.history.setChangeHandler(function (e) { applyHash(e.location.hash); });
+  } catch (e) {
+    applyHash(location.hash);
+  }
+
+  function load() {
+    fetchJson('screen3', render3, function (e) {
+      document.getElementById('dot3').className = 'dot stale';
+      document.getElementById('err3').textContent = 'Could not refresh: ' + e.message;
+    });
+    fetchJson('screen1', render, function (e) {
+      document.getElementById('dot').className = 'dot stale';
+      document.getElementById('err').textContent = 'Could not refresh: ' + e.message;
+    });
+    fetchJson('screen2', render2, function (e) {
+      document.getElementById('dot2').className = 'dot stale';
+      document.getElementById('err2').textContent = 'Could not refresh: ' + e.message;
+    });
+  }
+  load();
+  setInterval(load, 5 * 60 * 1000);
+</script>
+</body>
+</html>
