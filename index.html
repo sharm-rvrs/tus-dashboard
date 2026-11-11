@@ -12,7 +12,7 @@
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font: 15px/1.45 Inter, "Segoe UI", system-ui, sans-serif;
          font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1500px; margin: 0 auto; padding: 28px 28px; }
+  .wrap { width: 93vw; max-width: 1700px; margin: 0 auto; padding: 28px 28px; }
 
   header { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap; margin-bottom: 20px; }
   .brand { align-self:center; margin-right:20px; padding-right:20px; border-right:1px solid var(--line);
@@ -98,6 +98,17 @@
   table.paged td.empty { height:43px; padding:0 16px; }
   table.paged tr.filler td { border-bottom:0; }
   table.paged tr.filler:hover td { background:none; }
+  /* Inbox: 2 x 2 grid of cards that fits a 1080p TV without page scroll */
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; min-width:0;
+          display:flex; flex-direction:column; }
+  .card h2 { margin:0 0 10px; }
+  .card .summary { margin-bottom:10px; }
+  .card .panel { background:none; border-radius:8px; overflow:hidden; }
+  .card table, .card table.company { min-width:0; }
+  .card .pager { margin-top:auto; padding-top:10px; }
+  .card table.paged td.empty { color:var(--green); text-align:left; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -107,6 +118,7 @@
     <button class="tab" data-tab="people">People</button>
     <button class="tab" data-tab="company">Company</button>
     <button class="tab" data-tab="inbox">Inbox</button>
+    <button class="tab" data-tab="property">Property</button>
     <button class="tab" data-tab="history">History</button>
   </nav>
 
@@ -158,42 +170,134 @@
     <div class="meta"><span class="dot" id="dot3"></span><span id="updated3">Loading…</span></div>
   </header>
 
-  <div class="section first">
-    <h2>Emails waiting for a reply</h2>
-  </div>
-  <div class="summary" id="summaryE"></div>
-  <div class="panel">
-    <table class="company paged">
-      <thead><tr>
-        <th style="width:130px">Waiting</th><th style="width:130px">Inbox</th><th style="width:28%">From</th><th>Subject</th>
-      </tr></thead>
-      <tbody id="rowsE"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
-    </table>
-  </div>
-  <div class="pager" id="pagerE" hidden>
-    <button id="prevE">Previous</button>
-    <span id="pageE"></span>
-    <button id="nextE">Next</button>
-  </div>
-
-  <div class="section">
-    <h2>Coho messages waiting for a reply</h2>
-  </div>
-  <div class="summary" id="summary3"></div>
-  <div class="panel">
-    <table class="company paged">
-      <thead><tr>
-        <th style="width:130px">Waiting</th><th style="width:130px">Type</th><th>Subject</th><th style="width:22%">From</th><th style="width:22%">Property</th>
-      </tr></thead>
-      <tbody id="rows3"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
-    </table>
-  </div>
-  <div class="pager" id="pager3" hidden>
-    <button id="prev3">Previous</button>
-    <span id="page3"></span>
-    <button id="next3">Next</button>
+  <div class="grid">
+    <div class="card">
+      <h2>Lettings emails waiting</h2>
+      <div class="summary" id="summaryE"></div>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th style="width:110px">Waiting</th><th style="width:32%">From</th><th>Subject</th>
+          </tr></thead>
+          <tbody id="rowsE"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pagerE" hidden>
+        <button id="prevE">Previous</button>
+        <span id="pageE"></span>
+        <button id="nextE">Next</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Management emails waiting</h2>
+      <div class="summary" id="summaryG"></div>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th style="width:110px">Waiting</th><th style="width:32%">From</th><th>Subject</th>
+          </tr></thead>
+          <tbody id="rowsG"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pagerG" hidden>
+        <button id="prevG">Previous</button>
+        <span id="pageG"></span>
+        <button id="nextG">Next</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Coho messages waiting</h2>
+      <div class="summary" id="summary3"></div>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th style="width:110px">Waiting</th><th>Subject</th><th style="width:24%">From</th><th style="width:24%">Property</th>
+          </tr></thead>
+          <tbody id="rows3"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pager3" hidden>
+        <button id="prev3">Previous</button>
+        <span id="page3"></span>
+        <button id="next3">Next</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Coho maintenance waiting</h2>
+      <div class="summary" id="summaryK"></div>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th style="width:110px">Waiting</th><th>Subject</th><th style="width:24%">From</th><th style="width:24%">Property</th>
+          </tr></thead>
+          <tbody id="rowsK"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pagerK" hidden>
+        <button id="prevK">Previous</button>
+        <span id="pageK"></span>
+        <button id="nextK">Next</button>
+      </div>
+    </div>
   </div>
   <div class="err" id="err3"></div>
+  </section>
+
+  <section class="screen" id="screen-property" hidden>
+  <header>
+    <div>
+      <h1>Property</h1>
+    </div>
+    <div class="meta"><span class="dot" id="dot5"></span><span id="updated5">Loading…</span></div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Maintenance</h2>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th>Measure</th><th style="width:110px">Number</th><th style="width:110px">Target</th><th style="width:130px">Status</th>
+          </tr></thead>
+          <tbody id="rowsM"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Maintenance by stage</h2>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th>Stage</th><th style="width:130px">Open jobs</th>
+          </tr></thead>
+          <tbody id="rowsMS"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Compliance</h2>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th>Measure</th><th style="width:110px">Number</th><th style="width:110px">Target</th><th style="width:130px">Status</th>
+          </tr></thead>
+          <tbody id="rowsC"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Deposits</h2>
+      <div class="panel">
+        <table class="company paged">
+          <thead><tr>
+            <th>Stage</th><th style="width:110px">Number</th><th style="width:110px">Target</th><th style="width:130px">Status</th>
+          </tr></thead>
+          <tbody id="rowsD"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="err" id="err5"></div>
   </section>
 
   <section class="screen" id="screen-history" hidden>
@@ -340,34 +444,78 @@
       }
     });
   }
+  function renderProperty(data) {
+    document.getElementById('err5').textContent = '';
+    document.getElementById('dot5').className = 'dot';
+    document.getElementById('updated5').textContent = 'Updated ' + data.updated;
+    function fill(id, rows, twoCols) {
+      var body = document.getElementById(id);
+      body.textContent = '';
+      rows.forEach(function (r) {
+        var tr = el('tr');
+        tr.appendChild(el('td', 'm', r[0]));
+        tr.appendChild(el('td', 'm', String(r[1])));
+        if (!twoCols) {
+          tr.appendChild(el('td', 'm muted', r[2] || ''));
+          var s = el('td', 'm');
+          if (r[3] && r[3] !== 'NONE') s.appendChild(chip(r[3]));
+          tr.appendChild(s);
+        }
+        body.appendChild(tr);
+      });
+    }
+    var m = data.maintenance || {};
+    fill('rowsM', [
+      ['Open jobs', m.total || 0, '', ''],
+      ['Over 7 days', m.over7 || 0, '0', m.over7Status],
+      ['Overdue', m.overdue || 0, '0', m.overdueStatus],
+      ['Unassigned', m.unassigned || 0, '0', m.unassignedStatus],
+      ['Opened this week', m.openedThisWeek || 0, '', ''],
+      ['Closed this week', m.closedThisWeek || 0, '', ''],
+      ['Average days to complete (last 30 days)', m.avgDays == null ? '—' : m.avgDays, '', '']
+    ]);
+    var mst = (m.stages || []).filter(function (s) { return s.count > 0; }).map(function (s) { return [s.stage, s.count, '', '']; });
+    fill('rowsMS', mst.length ? mst : [['No open jobs', 0, '', '']], true);
+    var c = data.compliance || {}, d = data.deposits || {};
+    fill('rowsC', [
+      ['Overdue or missing', c.overdue || 0, '0', c.overdueStatus],
+      ['Due in 14 days', c.due14 || 0, '', ''],
+      ['Due in 30 days', c.due30 || 0, '', '']
+    ]);
+    var drows = (d.stages || []).map(function (s) { return [s.stage, s.count, '', '']; });
+    drows.push(['Return overdue', d.overdueReturns || 0, '0', d.overdueStatus]);
+    drows.push(['Total in progress', d.total || 0, '', '']);
+    fill('rowsD', drows);
+  }
   function render3(data) {
     document.getElementById('err3').textContent = '';
     document.getElementById('dot3').className = 'dot';
     document.getElementById('updated3').textContent = 'Updated ' + data.updated;
 
-    var summary = document.getElementById('summary3');
-    summary.textContent = '';
-    [['Total waiting', data.total], ['Messages', data.messages], ['Maintenance', data.maintenance],
-     ['Waiting over 24 hrs', data.over24]].forEach(function (x, i) {
-      var c = el('div', 'count' + (i === 3 && x[1] > 0 ? ' alert' : ''));
-      c.append(x[0], ' ', el('b', null, x[1] == null ? 0 : x[1]));
-      summary.appendChild(c);
-    });
-
-    cohoPager.set(data.items || []);
-
+    function inboxSummary(id, list) {
+      var summary = document.getElementById(id);
+      summary.textContent = '';
+      [['Total waiting', list.length],
+       ['Waiting over 24 hrs', list.filter(function (m) { return Number(m.hours) >= 24; }).length]].forEach(function (x, i) {
+        var c = el('div', 'count' + (i === 1 && x[1] > 0 ? ' alert' : ''));
+        c.append(x[0], ' ', el('b', null, x[1]));
+        summary.appendChild(c);
+      });
+    }
+    var cohoItems = data.items || [];
+    var cohoMsgs = cohoItems.filter(function (m) { return m.type === 'Message'; });
+    var cohoMaint = cohoItems.filter(function (m) { return m.type === 'Maintenance'; });
     var emails = data.emails || [];
-    var summaryE = document.getElementById('summaryE');
-    summaryE.textContent = '';
-    [['Total waiting', emails.length],
-     ['Lettings', emails.filter(function (m) { return m.inbox === 'Lettings'; }).length],
-     ['Management', emails.filter(function (m) { return m.inbox === 'Management'; }).length],
-     ['Waiting over 24 hrs', emails.filter(function (m) { return Number(m.hours) >= 24; }).length]].forEach(function (x, i) {
-      var c = el('div', 'count' + (i === 3 && x[1] > 0 ? ' alert' : ''));
-      c.append(x[0], ' ', el('b', null, x[1]));
-      summaryE.appendChild(c);
-    });
-    emailPager.set(emails);
+    var lettings = emails.filter(function (m) { return m.inbox === 'Lettings'; });
+    var mgmt = emails.filter(function (m) { return m.inbox !== 'Lettings'; });
+    inboxSummary('summaryE', lettings);
+    inboxSummary('summaryG', mgmt);
+    inboxSummary('summary3', cohoMsgs);
+    inboxSummary('summaryK', cohoMaint);
+    emailPager.set(lettings);
+    mgmtPager.set(mgmt);
+    cohoPager.set(cohoMsgs);
+    cohoMaintPager.set(cohoMaint);
   }
 
   function waitingCell(m) {
@@ -380,9 +528,9 @@
     return w;
   }
 
-  // Table paging: 10 rows a page, auto-advance every 15s,
+  // Table paging: 5 rows a page, auto-advance every 15s,
   // Previous/Next pauses auto-advance for 60s. Each table pages on its own.
-  var PAGE_SIZE = 10;
+  var PAGE_SIZE = 5;
   function makePager(id, cols, emptyText, renderRow) {
     var items = [], page = 0, pausedUntil = 0;
     function pageCount() { return Math.max(1, Math.ceil(items.length / PAGE_SIZE)); }
@@ -413,30 +561,32 @@
     return { set: function (list) { items = list; if (page >= pageCount()) page = 0; draw(); } };
   }
 
-  var cohoPager = makePager('3', 5, 'Nothing waiting for a reply.', function (m) {
+  function cohoRow(m) {
     var tr = el('tr');
     tr.appendChild(waitingCell(m));
-    tr.appendChild(el('td', 'm muted', m.type));
     tr.appendChild(el('td', 'm', m.subject));
     tr.appendChild(el('td', 'm', m.from));
     tr.appendChild(el('td', 'm muted', m.property));
     return tr;
-  });
-
-  var emailPager = makePager('E', 4, 'No emails waiting', function (m) {
+  }
+  function emailRow(m) {
     var tr = el('tr');
     tr.appendChild(waitingCell(m));
-    tr.appendChild(el('td', 'm muted', m.inbox));
     tr.appendChild(el('td', 'm', m.from));
     var s = el('td', 'm', m.subject);
     if (m.unread) s.prepend(el('span', 'tag', 'Unread'));
     tr.appendChild(s);
     return tr;
-  });
+  }
+  var NOTHING = 'Nothing waiting';
+  var cohoPager = makePager('3', 4, NOTHING, cohoRow);
+  var cohoMaintPager = makePager('K', 4, NOTHING, cohoRow);
+  var emailPager = makePager('E', 3, NOTHING, emailRow);
+  var mgmtPager = makePager('G', 3, NOTHING, emailRow);
 
   // Tabs. The web app runs in an iframe, so the hash lives on the top page:
   // read it with google.script.url and set it with google.script.history.
-  var TABS = ['people', 'company', 'inbox'];      // the #rotate cycle
+  var TABS = ['people', 'company', 'inbox', 'property'];      // the #rotate cycle
   var ALL_TABS = TABS.concat(['history']);        // history only opens when clicked
   var rotateTimer = null;
   function show(tab) {
@@ -522,7 +672,7 @@
     var b = document.getElementById('historyBody');
     b.textContent = '';
     var rows = (histData.rows || []).filter(function (r) { return r[0] === day; });
-    ['People', 'Company', 'Inbox'].forEach(function (screen, i) {
+    ['People', 'Company', 'Inbox', 'Property'].forEach(function (screen, i) {
       var sec = el('div', 'section' + (i === 0 ? ' first' : ''));
       sec.appendChild(el('h2', null, screen));
       b.appendChild(sec);
@@ -606,6 +756,10 @@
     fetchJson('screen1', render, function (e) {
       document.getElementById('dot').className = 'dot stale';
       document.getElementById('err').textContent = 'Could not refresh: ' + e.message;
+    });
+    fetchJson('property', renderProperty, function (e) {
+      document.getElementById('dot5').className = 'dot stale';
+      document.getElementById('err5').textContent = 'Could not refresh: ' + e.message;
     });
     fetchJson('screen2', render2, function (e) {
       document.getElementById('dot2').className = 'dot stale';
